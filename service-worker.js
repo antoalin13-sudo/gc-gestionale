@@ -1,4 +1,4 @@
-const CACHE_NAME = "gc-studios-gestionale-v10";
+const CACHE_NAME = "gc-studios-gestionale-v11";
 const ASSETS = [
   "./",
   "./index.html"
