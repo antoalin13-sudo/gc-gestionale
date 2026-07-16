@@ -1,4 +1,4 @@
-const CACHE_NAME = "gc-studios-gestionale-v9";
+const CACHE_NAME = "gc-studios-gestionale-v10";
 const ASSETS = [
   "./",
   "./index.html"
@@ -22,6 +22,10 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (new URL(event.request.url).pathname.endsWith("/maintenance.json")) {
+    event.respondWith(fetch(event.request, { cache: "no-store" }).catch(() => new Response('{"active":false}', { headers: { "Content-Type": "application/json" } })));
+    return;
+  }
   event.respondWith(
     fetch(event.request)
       .then((response) => {
