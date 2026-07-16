@@ -1974,6 +1974,10 @@ window.GC_CONFIG = window.GC_CONFIG || {
     return username ? `${username}@${config.authEmailDomain || "access.gcstudios.local"}` : "";
   };
   const showError = (message) => { loginError.textContent = message; loginError.hidden = false; };
+  function ensureAuthClient() {
+    if (!client && configured && window.supabase?.createClient) client = window.supabase.createClient(config.supabaseUrl, config.supabasePublishableKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    return client;
+  }
   async function showMaintenance(message) {
     maintenanceActive = true;
     clearInterval(sessionTimer); clearInterval(heartbeatTimer);
@@ -1982,7 +1986,7 @@ window.GC_CONFIG = window.GC_CONFIG || {
     document.querySelector("#collaboratorRoot").hidden = true;
     maintenanceMessage.textContent = message || "Stiamo migliorando il gestionale. L'accesso tornerà disponibile appena l'aggiornamento sarà concluso.";
     maintenanceScreen.hidden = false;
-    try { await client?.auth.signOut({ scope: "local" }); } catch {}
+    try { await ensureAuthClient()?.auth.signOut({ scope: "local" }); } catch {}
     currentProfile = null;
   }
   async function checkMaintenance() {
@@ -2093,7 +2097,7 @@ window.GC_CONFIG = window.GC_CONFIG || {
   async function initializeOnline() {
     if (await checkMaintenance()) return;
     if (!window.supabase?.createClient) { loginScreen.hidden = false; return showError("Impossibile collegarsi al servizio di accesso. Controlla la connessione internet."); }
-    client = window.supabase.createClient(config.supabaseUrl, config.supabasePublishableKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    client = ensureAuthClient();
     window.GCAuth = { client, getProfile: () => currentProfile, logout };
     const message = sessionStorage.getItem("gc-logout-message"); if (message) { sessionStorage.removeItem("gc-logout-message"); showError(message); }
     const { data: { session } } = await client.auth.getSession();
